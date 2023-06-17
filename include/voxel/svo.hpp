@@ -7,6 +7,7 @@
 
 namespace svo
 {
+
 	struct voxel {
 		glm::vec3 position;
 		glm::vec3 color;
@@ -18,25 +19,12 @@ namespace svo
 		node *children[8] = { nullptr };
 	};
 
-	struct voxel_data_hash {
-		std::size_t operator()(const voxel &vd) const
-		{
-			// Compute a hash based on the position of the voxel_data
-			std::size_t h1 = std::hash<float> {}(vd.position.x);
-			std::size_t h2 = std::hash<float> {}(vd.position.y);
-			std::size_t h3 = std::hash<float> {}(vd.position.z);
-			return h1 ^ h2 ^ h3;
-		}
+	struct march_result {
+		float distance;
+		const svo::node *node;
 	};
 
-	struct voxel_data_equal {
-		bool operator()(const voxel &vd1, const voxel &vd2) const
-		{
-			return vd1.position == vd2.position;
-		}
-	};
-
-	typedef std::unordered_set<voxel, voxel_data_hash, voxel_data_equal> voxel_set;
+	typedef std::vector<voxel> voxel_set;
 
 	class grid_buffer
 	{
@@ -216,7 +204,7 @@ namespace svo
 			}
 		}
 
-		float march(ray::raycast &ray, float max_distance) const
+		march_result march(ray::raycast &ray, float max_distance) const
 		{
 			return march_recursive(ray, max_distance, root);
 		}
@@ -232,9 +220,11 @@ namespace svo
 		 * @remarks This function performs ray marching recursively
 		 *          through the octree to find the distance to the nearest surface.
 		 */
-		float march_recursive(ray::raycast &ray, float max_distance, const node *node) const
+		march_result march_recursive(ray::raycast &ray, float max_distance, const node *node) const
 		{
-			float min = std::numeric_limits<float>::max();
+			march_result result;
+			result.distance = std::numeric_limits<float>::max();
+			result.node = nullptr;
 
 			if (!node->children[0])
 			{
@@ -244,14 +234,13 @@ namespace svo
 					if (voxel.size > 0.0f)
 					{
 						float t = ray.intersect_cube(voxel.position, voxel.size);
-						if (t >= 0.0f && t < min)
+						if (t >= 0.0f && t < result.distance)
 						{
-							min = t;
+							result.distance = t;
+							result.node = node;
 						}
 					}
 				}
-
-				return min;
 			}
 			else
 			{
@@ -261,24 +250,27 @@ namespace svo
 					if (child)
 					{
 						float t = ray.intersect_cube(child->voxels[0].position, child->voxels[0].size);
-						if (t >= 0.0f && t < min)
+						if (t >= 0.0f && t < result.distance)
 						{
-							min = t;
+							result.distance = t;
+							result.node = child;
+
 							ray.set_origin(ray.get_origin() + ray.get_direction() * t);
 
-							auto result = march_recursive(ray, max_distance - t, child);
+							march_result child_result = march_recursive(ray, max_distance - t, child);
 
-							if (result >= 0.0f)
+							if (child_result.node != nullptr)
 							{
-								return t + result;
+								result.distance += child_result.distance;
+								break;
 							}
 						}
 					}
 				}
-				return -1.0f;
 			}
-		}
 
+			return result;
+		}
 		int count_voxels(const node *node)
 		{
 			if (!node)

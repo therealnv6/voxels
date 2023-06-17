@@ -193,9 +193,7 @@ public:
 
 			for (auto [entity, movement] : view.each())
 			{
-				ray::raycast cast(
-					movement.position,
-					camera.get_direction());
+				ray::raycast cast(movement.position, camera.get_direction());
 
 				// deltas and steps, these are used for the raycasting
 				glm::vec3 deltas(1.0f, 1.0f, 1.0f);
@@ -228,7 +226,10 @@ public:
 						cast.set_direction(rotatedDirection);
 
 						const float max_distance = 100.0f; // Adjust as needed
-						const auto distance = svo.march(cast, max_distance);
+						const auto result = svo.march(cast, max_distance);
+
+						float distance = result.distance;
+						auto node = result.node;
 
 						if (distance >= 0.0f && distance <= max_distance)
 						{
@@ -241,10 +242,12 @@ public:
 
 							svo::voxel voxel;
 							voxel.position = intersection_point;
-							voxel.color = glm::vec3(1.0f); // Set the desired color
+							voxel.color = intersection_point / 1.0f; // Set the desired color
 							voxel.size = 1.0f; // Set the desired size
 
-							voxels.insert(voxel);
+							{
+								voxels.push_back(voxel);
+							}
 						}
 					}
 				}
