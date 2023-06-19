@@ -7,7 +7,6 @@
 
 namespace svo
 {
-
 	struct voxel {
 		glm::vec3 position;
 		glm::vec3 color;
@@ -20,6 +19,7 @@ namespace svo
 	};
 
 	struct march_result {
+		bool hit = false;
 		float distance;
 		const svo::voxel *voxel;
 		const svo::node *node;
@@ -60,7 +60,7 @@ namespace svo
 
 			for (auto voxel : data)
 			{
-				const float half_size = 0.5f;
+				const float half_size = voxel.size / 2;
 				glm::vec3 center = voxel.position;
 
 				// Define the vertices for the cube
@@ -238,6 +238,7 @@ namespace svo
 						if (t >= 0.0f && t < result.distance)
 						{
 							result.distance = t;
+							result.hit = true;
 							result.node = node;
 							result.voxel = &voxel;
 						}
