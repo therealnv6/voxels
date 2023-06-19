@@ -104,73 +104,6 @@ public:
 			}
 		}
 
-		void tick(const frame::tick_event &event)
-		{
-			auto registry = event.registry;
-			auto framework = static_cast<test_framework *>(event.data);
-
-			auto camera_entity = registry->view<gfx::camera>().front();
-			auto grid_entity = registry->view<voxel::grid<CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH>>().front();
-
-			auto view = registry->view<movement>();
-
-			auto camera = registry->get<gfx::camera>(camera_entity);
-			auto grid = registry->get<voxel::grid<CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH>>(grid_entity);
-
-			gfx::clear(gfx::clear_buffer::Color | gfx::clear_buffer::Depth);
-
-			framework->shader->bind();
-
-			voxel::voxel_set voxels;
-			voxels.reserve(80 * 80);
-
-			for (auto [entity, movement] : view.each())
-			{
-				ray::raycast cast(
-					movement.position,
-					camera.get_direction());
-
-				// deltas and steps, these are used for the raycasting
-				glm::vec3 deltas(1.0f, 1.0f, 1.0f);
-				glm::vec3 steps(1.0f, 1.0f, 1.0f);
-
-				glm::vec3 player_position = movement.position;
-
-				cast.set_origin(player_position);
-
-				for (int yaw = -45; yaw < 45; yaw += 2)
-				{
-					float horizontalAngle = glm::radians(static_cast<float>(yaw));
-
-					for (int pitch = -45; pitch < 45; pitch += 2)
-					{
-						float verticalAngle = glm::radians(static_cast<float>(pitch));
-
-						glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-						rotationMatrix = glm::rotate(rotationMatrix, verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-						glm::vec3 rotatedDirection = glm::vec3(rotationMatrix * glm::vec4(camera.get_direction(), 0.0f));
-
-						cast.set_direction(rotatedDirection);
-
-						const auto voxel = ray::trace_ray(cast, grid, deltas, steps);
-
-						if (voxel != std::nullopt)
-						{
-							spdlog::debug(
-								"pushing voxel at location {}, {}, {}, while player is at {}, {}, {}",
-								voxel->position.x, voxel->position.y, voxel->position.z,
-								player_position.x, player_position.y, player_position.z);
-
-							voxels.insert(voxel.value());
-						}
-					}
-				}
-			}
-
-			grid.update_buffer(voxels);
-			grid.draw_buffer();
-		}
-
 		void tick_svo(const frame::tick_event &event)
 		{
 			auto registry = event.registry;
@@ -240,10 +173,8 @@ public:
 								intersection_point.x, intersection_point.y, intersection_point.z,
 								player_position.x, player_position.y, player_position.z);
 
-							svo::voxel voxel;
+							auto voxel = *result.voxel;
 							voxel.position = intersection_point;
-							voxel.color = intersection_point / 1.0f; // Set the desired color
-							voxel.size = 1.0f; // Set the desired size
 
 							{
 								voxels.push_back(voxel);
@@ -364,8 +295,8 @@ public:
 		}
 
 		{
-			gfx::enable(gfx::enable_fields::CullFace);
-			gfx::depth(gfx::depth_function::Less);
+			// gfx::enable(gfx::enable_fields::CullFace);
+			// gfx::depth(gfx::depth_function::Less);
 			gfx::clear_color({ 0.0, 0.1, 0.2, 0.0 });
 			buffer::reserve_vertex_array(1);
 		}
@@ -373,32 +304,11 @@ public:
 		shader = std::make_unique<shader::shader>("shaders/simple.vert", "shaders/simple.frag");
 		// computeShader = std::make_unique<shader::shader>("shaders/svo_march.comp.glsl");
 
-		svo::svo octree(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 0.5, 0.5), 1.0);
-
-		voxel::grid<CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH> grid(
-			glm::vec3(0.0, 0.0, 0.0),
-			glm::vec3(1.0, 1.0, 1.0),
-			glm::vec3(1.0, 1.0, 1.0),
-			glm::vec3(1.0, 1.0, 1.0));
-
-		for (int x = 0; x < CHUNK_WIDTH; x++)
-		{
-			for (int y = 0; y < CHUNK_HEIGHT; y++)
-			{
-				for (int z = 0; z < CHUNK_DEPTH; z++)
-				{
-					glm::vec3 position(x, y, z);
-					glm::vec3 color(position.x / CHUNK_WIDTH, position.y / CHUNK_HEIGHT, position.z / CHUNK_DEPTH);
-					grid.set_voxel_at(position, color);
-				}
-			}
-		}
+		svo::svo octree(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 0.5, 0.5), 0.5);
 
 		registry.emplace<svo::svo>(registry.create(), octree);
-		registry.emplace<voxel::grid<CHUNK_WIDTH, CHUNK_HEIGHT, CHUNK_DEPTH>>(registry.create(), grid);
-
-		// registry.emplace<svo::svo>(registry.create(), octree);
 		registry.emplace<gfx::camera>(registry.create());
+
 		registry.emplace<movement>(registry.create());
 
 		listener listener;

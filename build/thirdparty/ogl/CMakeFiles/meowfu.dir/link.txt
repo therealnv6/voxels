@@ -1,2 +1,0 @@
-/usr/bin/ar qc libmeowfu.a CMakeFiles/meowfu.dir/thirdparty/imgui/backends/imgui_impl_glfw.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/backends/imgui_impl_opengl3.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/imgui.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/imgui_draw.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/imgui_demo.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/imgui_tables.cpp.o CMakeFiles/meowfu.dir/thirdparty/imgui/imgui_widgets.cpp.o CMakeFiles/meowfu.dir/src/render.cpp.o
-/usr/bin/ranlib libmeowfu.a

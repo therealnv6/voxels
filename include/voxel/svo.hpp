@@ -21,6 +21,7 @@ namespace svo
 
 	struct march_result {
 		float distance;
+		const svo::voxel *voxel;
 		const svo::node *node;
 	};
 
@@ -238,6 +239,7 @@ namespace svo
 						{
 							result.distance = t;
 							result.node = node;
+							result.voxel = &voxel;
 						}
 					}
 				}

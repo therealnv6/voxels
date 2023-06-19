@@ -1,1 +1,0 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/voxels.dir/src/main.cpp.o -o voxels  thirdparty/ogl/libmeowfu.a thirdparty/ogl/thirdparty/glfw/src/libglfw3.a /usr/lib/librt.a -lm -ldl /usr/lib/libGLEW.so /usr/lib/libOpenGL.so /usr/lib/libGLX.so /usr/lib/libGLU.so /usr/lib/libspdlog.so.1.11.0 /usr/lib/libfmt.so.9.1.0 
