@@ -100,6 +100,7 @@ struct listener {
 int main()
 {
 	gfx::context context("voxel", 2560, 1440);
+
 	entt::registry registry = entt::basic_registry();
 	entt::dispatcher dispatcher;
 
@@ -114,6 +115,7 @@ int main()
 		gfx::enable(gfx::enable_fields::CullFace);
 		gfx::depth(gfx::depth_function::Less);
 		gfx::clear_color({ 0.0, 0.1, 0.2, 0.0 });
+
 		buffer::reserve_vertex_array(1);
 	}
 

@@ -7,7 +7,7 @@
 #include <shader.hpp>
 
 const static float MOVEMENT_SPEED = 30.0f;
-const static float MOUSE_SPEED = 1.5f;
+const static float MOUSE_SPEED = 150.0f;
 
 struct poll_input_event {
 	entt::registry *registry;
@@ -28,11 +28,7 @@ public:
 		auto &shader = registry->ctx().get<shader::shader>();
 
 		{
-			camera.rotate(move.horizontalAngle, -move.verticalAngle);
 			camera.move(move.position);
-
-			move.horizontalAngle = 0.0;
-			move.verticalAngle = 0.0;
 
 			auto projection = camera.get_projection();
 			auto view = camera.get_view_matrix();
@@ -90,6 +86,7 @@ public:
 
 			// Limit the vertical angle to a certain range to prevent camera flipping
 			move.verticalAngle = glm::clamp(move.verticalAngle, -90.0f, 90.0f);
+			camera.rotate_to(move.horizontalAngle, -move.verticalAngle);
 
 			// yikes (should change this sometime)
 			glm::vec3 direction = camera.get_direction();
