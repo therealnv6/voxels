@@ -31,6 +31,8 @@ constexpr int CHUNK_DEPTH = 16;
 struct listener {
 	void tick_svo(const frame::tick_event &event)
 	{
+		static int draw_turn = 0;
+
 		auto registry = event.registry;
 		auto framework = event.data;
 
@@ -44,15 +46,12 @@ struct listener {
 		shader.bind();
 
 		svo::voxel_set voxels;
+
 		voxels.reserve(80 * 80);
 
 		{
 			glm::vec3 player_position = camera.get_position();
 			ray::raycast cast(player_position, camera.get_direction());
-
-			// deltas and steps, these are used for the raycasting
-			glm::vec3 deltas(1.0f, 1.0f, 1.0f);
-			glm::vec3 steps(1.0f, 1.0f, 1.0f);
 
 			cast.set_origin(player_position);
 
@@ -72,28 +71,22 @@ struct listener {
 						glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 					const float max_distance = 100.0f; // Adjust as needed
-					const auto result = svo.march(cast, max_distance);
+					auto result = svo.march(cast, max_distance);
 
 					float distance = result.distance;
 
-					if (result.hit)
+					glm::vec3 intersection_point = cast.get_origin() + cast.get_direction() * distance;
+
+					if (result.hit && result.node->draw_turn != draw_turn)
 					{
-						glm::vec3 intersection_point = cast.get_origin() + cast.get_direction() * distance;
-
-						auto voxel = *result.voxel;
-						voxel.position = intersection_point;
-
-						{
-							voxels.push_back(voxel);
-						}
+						result.node->draw_turn = draw_turn;
 					}
 				}
 			}
 		}
 
-		// Update and draw the voxel grid
-		svo.update_buffer(voxels);
-		svo.draw_buffer();
+		svo.draw_node_buffer(camera.get_position(), camera.get_direction(), draw_turn);
+		draw_turn++;
 	}
 };
 
@@ -121,7 +114,7 @@ int main()
 
 	listener list;
 
-	svo::svo octree(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 0.5, 0.5), 0.5);
+	svo::svo octree(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 0.5, 0.5), 1.0);
 	gfx::camera camera(projection::perspective, 90.0f, 0.1f, 10000.0f);
 
 	movement move;

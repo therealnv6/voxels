@@ -14,15 +14,17 @@ namespace svo
 	};
 
 	struct node {
+		glm::vec3 position;
 		voxel voxels[8];
 		node *children[8] = { nullptr };
+		int draw_turn = -1;
 	};
 
 	struct march_result {
 		bool hit = false;
 		float distance;
+		svo::node *node;
 		const svo::voxel *voxel;
-		const svo::node *node;
 	};
 
 	typedef std::vector<voxel> voxel_set;
@@ -122,6 +124,8 @@ namespace svo
 	class svo
 	{
 	public:
+		node *root;
+
 		/**
 		 * Constructs an SVO with a root voxel.
 		 *
@@ -135,6 +139,7 @@ namespace svo
 			: buffer(glm::vec3(128.0, 128.0, 128.0))
 		{
 			root = new node();
+			root->position = position;
 			root->voxels[0] = voxel { position, color, root_size };
 		}
 
@@ -158,11 +163,13 @@ namespace svo
 			for (int i = 0; i < 8; i++)
 			{
 				glm::vec3 child_position = parent_pos;
+
 				child_position.x += (i & 1) ? child_size : -child_size;
 				child_position.y += (i & 2) ? child_size : -child_size;
 				child_position.z += (i & 4) ? child_size : -child_size;
 
 				node->children[i] = new class node();
+				node->children[i]->position = child_position;
 				node->children[i]->voxels[0] = voxel { child_position, child_color, child_size };
 			}
 		}
@@ -205,7 +212,7 @@ namespace svo
 			}
 		}
 
-		march_result march(ray::raycast &ray, float max_distance) const
+		march_result march(ray::raycast &ray, float max_distance)
 		{
 			return march_recursive(ray, max_distance, root);
 		}
@@ -221,7 +228,7 @@ namespace svo
 		 * @remarks This function performs ray marching recursively
 		 *          through the octree to find the distance to the nearest surface.
 		 */
-		march_result march_recursive(ray::raycast &ray, float max_distance, const node *node) const
+		march_result march_recursive(ray::raycast &ray, float max_distance, node *node)
 		{
 			march_result result;
 			result.distance = std::numeric_limits<float>::max();
@@ -274,6 +281,7 @@ namespace svo
 
 			return result;
 		}
+
 		int count_voxels(const node *node)
 		{
 			if (!node)
@@ -298,8 +306,15 @@ namespace svo
 				return;
 			}
 
-			voxelData[currentIndex] = node->voxels[0];
-			currentIndex++;
+			glm::vec3 nodePosition = root->position + node->position;
+
+			for (int i = 0; i < 8; i++)
+			{
+				voxelData[currentIndex].position = nodePosition + node->voxels[i].position;
+				voxelData[currentIndex].color = node->voxels[i].color;
+				voxelData[currentIndex].size = node->voxels[i].size;
+				currentIndex++;
+			}
 
 			for (int i = 0; i < 8; i++)
 			{
@@ -328,8 +343,23 @@ namespace svo
 			this->buffer.draw();
 		}
 
+		void draw_node_buffer(glm::vec3 position_from, glm::vec3 direction, int draw_turn)
+		{
+			if (root->draw_turn == draw_turn)
+			{
+				voxel_set voxels;
+
+				for (int i = 0; i < 8; i++)
+				{
+					voxels.push_back(root->voxels[i]);
+				}
+
+				update_buffer(voxels);
+				draw_buffer();
+			}
+		}
+
 	private:
-		node *root;
 		float min_voxel_size = 0.01f;
 		grid_buffer buffer;
 	};

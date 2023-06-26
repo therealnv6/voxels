@@ -98,8 +98,8 @@ public:
 				{ input::key::a, -right }, // Left
 				{ input::key::s, -direction }, // Backwards
 				{ input::key::d, right }, // Right
-				{ input::key::spacebar, glm::vec3(0.0f, 1.0f, 0.0f) }, // Up
-				{ input::key::shift, glm::vec3(0.0f, -1.0f, 0.0f) }	// Down
+				{ input::key::spacebar, glm::vec3(0.0f, -1.0f, 0.0f) }, // Up
+				{ input::key::shift, glm::vec3(0.0f, 1.0f, 0.0f) }  // Down
 			};
 
 			for (const auto &entry : keyToDirection)
