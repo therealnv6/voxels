@@ -7,6 +7,8 @@
 
 #include <framework.hpp>
 
+using namespace entt::literals;
+
 class ui_listener
 {
 public:
@@ -29,6 +31,8 @@ public:
 			float total_mem_mb = info::get_memory(memory_type::available_memory, memory_scale::megabytes);
 			float cur_avail_mem_mb = info::get_memory(memory_type::free_space, memory_scale::megabytes);
 
+			auto &draw_turn = registry->ctx().get<int>("draw_turn"_hs);
+
 			ImGui::Begin("ogl voxel");
 
 			if (ImGui::BeginTabBar(""))
@@ -37,6 +41,7 @@ public:
 				{
 					ImGui::PlotLines("", history.frames.data(), history.max_frames);
 					ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+					ImGui::Text("Application draw turn: %i (%.1f per second)", draw_turn, 1000.0f / draw_turn);
 					ImGui::Text("Memory usage %.2f/%.3f MB", total_mem_mb - cur_avail_mem_mb, total_mem_gb);
 
 					ImGui::Text("camera.get_direction(): %s", glm::to_string(camera.get_direction()).c_str());

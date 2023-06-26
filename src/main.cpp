@@ -1,42 +1,32 @@
-#include "imgui.h"
-#include "movement.hpp"
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <buffer.hpp>
 #include <camera.hpp>
-#include <framework.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <optional>
-#include <spdlog/common.h>
-#include <voxel/svo.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
 #include <entity.hpp>
-#include <glm/gtx/string_cast.hpp>
-#include <imgui.h>
-#include <info.hpp>
+#include <framework.hpp>
+#include <movement.hpp>
 #include <render.hpp>
 #include <shader.hpp>
+#include <spdlog/common.h>
 #include <spdlog/spdlog.h>
 #include <ui.hpp>
-#include <voxel/grid.hpp>
 #include <voxel/ray.hpp>
-#include <voxel/tracing.hpp>
+#include <voxel/svo.hpp>
 #include <window.hpp>
 
 constexpr int CHUNK_WIDTH = 16;
 constexpr int CHUNK_HEIGHT = 16;
 constexpr int CHUNK_DEPTH = 16;
 
+using namespace entt::literals;
+
 struct listener {
 	void tick_svo(const frame::tick_event &event)
 	{
-		static int draw_turn = 0;
-
 		auto registry = event.registry;
 		auto framework = event.data;
 
-		auto &camera = registry->ctx().get<gfx::camera>();
+		auto &draw_turn = registry->ctx().get<int>("draw_turn"_hs);
+
+		auto &camera
+			= registry->ctx().get<gfx::camera>();
 
 		auto &shader = registry->ctx().get<shader::shader>();
 		auto &svo = registry->ctx().get<svo::svo>();
@@ -115,6 +105,7 @@ int main()
 
 	movement move;
 
+	registry.ctx().emplace_as<int>("draw_turn"_hs, 0);
 	registry.ctx().emplace<movement>();
 	registry.ctx().emplace<svo::svo>(octree);
 	registry.ctx().emplace<gfx::camera>(camera);
