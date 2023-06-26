@@ -45,10 +45,6 @@ struct listener {
 
 		shader.bind();
 
-		svo::voxel_set voxels;
-
-		voxels.reserve(80 * 80);
-
 		{
 			glm::vec3 player_position = camera.get_position();
 			ray::raycast cast(player_position, camera.get_direction());
