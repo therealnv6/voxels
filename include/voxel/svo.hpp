@@ -174,6 +174,19 @@ public:
 			}
 		}
 
+    void subdivide_recursively(node *node, int recursion_amount)
+    {
+      if (recursion_amount >= 1 && node)
+      {
+        subdivide_node(node);
+
+        for(int i = 0; i < 8; i++)
+        {
+          subdivide_recursively(node->children[i], recursion_amount - 1);
+        }
+      }
+    }
+
 		/**
 		 * Constructs the octree recursively by subdividing nodes.
 		 *
@@ -234,7 +247,7 @@ public:
 			result.distance = std::numeric_limits<float>::max();
 			result.node = nullptr;
 
-			if (!node->children[0])
+			if (!node->children[0]) // check if the node is a leaf node
 			{
 				for (int i = 0; i < 8; i++)
 				{
@@ -256,10 +269,12 @@ public:
 			{
 				for (int i = 0; i < 8; i++)
 				{
-					const auto &child = node->children[i];
+					const auto child = node->children[i];
+
 					if (child)
 					{
 						float t = ray.intersect_cube(child->voxels[0].position, child->voxels[0].size);
+
 						if (t >= 0.0f && t < result.distance)
 						{
 							result.distance = t;
@@ -272,6 +287,7 @@ public:
 							if (child_result.node != nullptr)
 							{
 								result.distance += child_result.distance;
+                result.hit = true;
 								break;
 							}
 						}
@@ -343,19 +359,47 @@ public:
 			this->buffer.draw();
 		}
 
-		void draw_node_buffer(glm::vec3 position_from, glm::vec3 direction, int draw_turn)
+		void draw_node_buffer(glm::vec3 position_from, glm::vec3 direction, int depth, int draw_turn)
 		{
-			if (root->draw_turn == draw_turn)
-			{
-				voxel_set voxels;
+			voxel_set voxels;
 
+			get_voxels_with_depth(root, draw_turn, depth, voxels);
+
+      if (voxels.size() > 0)
+      {
+  			update_buffer(voxels);
+	  		draw_buffer();
+      }	
+		}
+
+public:
+		std::vector<voxel> get_voxels(int draw_turn)
+		{
+			voxel_set set;
+			get_voxels_with_depth(root, draw_turn, 1, set);
+			return set;
+		}
+
+		void get_voxels_with_depth(node *node, int draw_turn, int depth, voxel_set &voxels)
+		{
+			if (!node)
+			{
+				return;
+			}
+
+			if (depth == 1 && node->draw_turn != draw_turn)
+			{
+				for (int i = 0; i < 8; i += 1)
+				{
+					voxels.push_back(node->voxels[i]);
+				}
+			}
+			else if (depth > 1)
+			{
 				for (int i = 0; i < 8; i++)
 				{
-					voxels.push_back(root->voxels[i]);
+					get_voxels_with_depth(node->children[i], draw_turn, depth - 1, voxels);
 				}
-
-				update_buffer(voxels);
-				draw_buffer();
 			}
 		}
 

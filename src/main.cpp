@@ -1,6 +1,7 @@
 #include <camera.hpp>
 #include <entity.hpp>
 #include <framework.hpp>
+#include <glm/gtx/string_cast.hpp>
 #include <movement.hpp>
 #include <render.hpp>
 #include <shader.hpp>
@@ -10,10 +11,6 @@
 #include <voxel/ray.hpp>
 #include <voxel/svo.hpp>
 #include <window.hpp>
-
-constexpr int CHUNK_WIDTH = 16;
-constexpr int CHUNK_HEIGHT = 16;
-constexpr int CHUNK_DEPTH = 16;
 
 using namespace entt::literals;
 
@@ -52,10 +49,9 @@ struct listener {
 				{
 					float verticalAngle = glm::radians(static_cast<float>(pitch));
 
-					cast.set_direction(glm::rotate(
-							glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
+					cast.set_direction(glm::rotate(glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-					const float max_distance = 100.0f; // Adjust as needed
+					const float max_distance = 25.0f; // Adjust as needed
 					auto result = svo.march(cast, max_distance);
 
 					float distance = result.distance;
@@ -70,7 +66,7 @@ struct listener {
 			}
 		}
 
-		svo.draw_node_buffer(camera.get_position(), camera.get_direction(), draw_turn);
+		svo.draw_node_buffer(camera.get_position(), camera.get_direction(), 2, draw_turn);
 		draw_turn++;
 	}
 };
@@ -101,6 +97,9 @@ int main()
 
 	svo::svo octree(glm::vec3(0.0, 0.0, 0.0), glm::vec3(1.0, 0.5, 0.5), 1.0);
 	gfx::camera camera(projection::perspective, 90.0f, 0.1f, 10000.0f);
+
+	octree.construct_octree();
+	octree.subdivide_recursively(octree.root, 4);
 
 	movement move;
 
