@@ -11,7 +11,7 @@ using namespace entt::literals;
 
 class ui_listener
 {
-public:
+	public:
 	void update_gui(const frame::tick_event &event)
 	{
 		event.data->gui_frame();

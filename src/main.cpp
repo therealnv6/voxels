@@ -25,8 +25,7 @@ struct listener {
 
 		auto &draw_turn = registry->ctx().get<int>("draw_turn"_hs);
 
-		auto &camera
-			= registry->ctx().get<gfx::camera>();
+		auto &camera = registry->ctx().get<gfx::camera>();
 
 		auto &shader = registry->ctx().get<shader::shader>();
 		auto &svo = registry->ctx().get<svo::svo>();
@@ -54,7 +53,7 @@ struct listener {
 					float verticalAngle = glm::radians(static_cast<float>(pitch));
 
 					cast.set_direction(glm::rotate(
-						glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
+							glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 					const float max_distance = 100.0f; // Adjust as needed
 					auto result = svo.march(cast, max_distance);

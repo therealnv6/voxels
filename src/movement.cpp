@@ -16,7 +16,7 @@ struct poll_input_event {
 
 class movement_listener
 {
-public:
+	public:
 	void update_camera(const frame::tick_event &event)
 	{
 		auto registry = event.registry;
@@ -36,7 +36,7 @@ public:
 			if (ImGui::GetCurrentContext() == nullptr || !ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow))
 			{
 				framework->dispatcher.trigger(
-					poll_input_event { registry, framework } // we could probably make a single poll_input_event instead of making a new one.
+						poll_input_event { registry, framework } // we could probably make a single poll_input_event instead of making a new one.
 				);
 			}
 
@@ -99,7 +99,7 @@ public:
 				{ input::key::s, -direction }, // Backwards
 				{ input::key::d, right }, // Right
 				{ input::key::spacebar, glm::vec3(0.0f, -1.0f, 0.0f) }, // Up
-				{ input::key::shift, glm::vec3(0.0f, 1.0f, 0.0f) }  // Down
+				{ input::key::shift, glm::vec3(0.0f, 1.0f, 0.0f) }	 // Down
 			};
 
 			for (const auto &entry : keyToDirection)

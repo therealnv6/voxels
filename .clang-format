@@ -17,8 +17,9 @@ SpacesInConditionalStatement: false
 SpacesInParentheses: false
 Standard: Latest
 AlignArrayOfStructures: Right
-TabWidth: 4
-UseTab: Always
+TabWidth: 2
+IndentWidth: 2
+UseTab: Always 
 BreakBeforeBraces: Custom
 BraceWrapping:
   AfterClass: true

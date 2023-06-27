@@ -31,12 +31,12 @@ namespace svo
 
 	class grid_buffer
 	{
-	private:
+private:
 		buffer::buffer *vertex_buffer;
 		buffer::buffer *color_buffer;
 		buffer::buffer *index_buffer;
 
-	public:
+public:
 		grid_buffer(glm::vec3 bounds)
 		{
 			vertex_buffer = new buffer::buffer(nullptr, 0, draw_type::dynamic_draw, buffer_type::array);
@@ -123,7 +123,7 @@ namespace svo
 
 	class svo
 	{
-	public:
+public:
 		node *root;
 
 		/**
@@ -136,7 +136,7 @@ namespace svo
 		 * @remarks This constructor initializes the SVO with a root voxel at the specified position, color, and size.
 		 */
 		svo(const glm::vec3 &position, const glm::vec3 &color, float root_size)
-			: buffer(glm::vec3(128.0, 128.0, 128.0))
+				: buffer(glm::vec3(128.0, 128.0, 128.0))
 		{
 			root = new node();
 			root->position = position;
@@ -359,7 +359,7 @@ namespace svo
 			}
 		}
 
-	private:
+private:
 		float min_voxel_size = 0.01f;
 		grid_buffer buffer;
 	};

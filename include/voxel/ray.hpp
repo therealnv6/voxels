@@ -9,10 +9,10 @@
 namespace ray
 {
 	struct raycast final {
-	public:
+public:
 		[[nodiscard]] constexpr raycast(glm::vec3 origin, glm::vec3 direction)
-			: origin(origin)
-			, direction(direction)
+				: origin(origin)
+				, direction(direction)
 		{
 			spdlog::debug("created new ray");
 		};
@@ -111,7 +111,7 @@ namespace ray
 			return tmin;
 		}
 
-	private:
+private:
 		glm::vec3 origin;
 		glm::vec3 direction;
 	};

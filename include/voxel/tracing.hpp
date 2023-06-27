@@ -10,10 +10,10 @@ namespace ray
 
 	template<int X, int Y, int Z>
 	std::optional<voxel::voxel_data> trace_ray(
-		const ray::raycast &ray,
-		const voxel::grid<X, Y, Z> &grid,
-		glm::vec3 deltas,
-		glm::vec3 steps)
+			const ray::raycast &ray,
+			const voxel::grid<X, Y, Z> &grid,
+			glm::vec3 deltas,
+			glm::vec3 steps)
 	{
 		glm::vec3 origin = ray.get_origin();
 		glm::vec3 direction = ray.get_direction();
