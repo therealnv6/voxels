@@ -136,7 +136,7 @@ public:
 		 * @remarks This constructor initializes the SVO with a root voxel at the specified position, color, and size.
 		 */
 		svo(const glm::vec3 &position, const glm::vec3 &color, float root_size)
-				: buffer(glm::vec3(128.0, 128.0, 128.0))
+				: buffer(position)
 		{
 			root = new node();
 			root->position = position;
@@ -158,11 +158,10 @@ public:
 			float parent_size = node->voxels[0].size;
 			float child_size = parent_size / 2;
 
-			glm::vec3 child_color = node->voxels[0].color;
-
 			for (int i = 0; i < 8; i++)
 			{
 				glm::vec3 child_position = parent_pos;
+				glm::vec3 child_color = (node->voxels[0].color * static_cast<float>(i));
 
 				child_position.x += (i & 1) ? child_size : -child_size;
 				child_position.y += (i & 2) ? child_size : -child_size;
@@ -174,18 +173,18 @@ public:
 			}
 		}
 
-    void subdivide_recursively(node *node, int recursion_amount)
-    {
-      if (recursion_amount >= 1 && node)
-      {
-        subdivide_node(node);
+		void subdivide_recursively(node *node, int recursion_amount)
+		{
+			if (recursion_amount >= 1 && node)
+			{
+				subdivide_node(node);
 
-        for(int i = 0; i < 8; i++)
-        {
-          subdivide_recursively(node->children[i], recursion_amount - 1);
-        }
-      }
-    }
+				for (int i = 0; i < 8; i++)
+				{
+					subdivide_recursively(node->children[i], recursion_amount - 1);
+				}
+			}
+		}
 
 		/**
 		 * Constructs the octree recursively by subdividing nodes.
@@ -287,7 +286,7 @@ public:
 							if (child_result.node != nullptr)
 							{
 								result.distance += child_result.distance;
-                result.hit = true;
+								result.hit = true;
 								break;
 							}
 						}
@@ -365,11 +364,11 @@ public:
 
 			get_voxels_with_depth(root, draw_turn, depth, voxels);
 
-      if (voxels.size() > 0)
-      {
-  			update_buffer(voxels);
-	  		draw_buffer();
-      }	
+			if (voxels.size() > 0)
+			{
+				update_buffer(voxels);
+				draw_buffer();
+			}
 		}
 
 public:

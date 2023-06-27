@@ -21,6 +21,7 @@ struct listener {
 		auto framework = event.data;
 
 		auto &draw_turn = registry->ctx().get<int>("draw_turn"_hs);
+		auto &nodes_drawn = registry->ctx().get<int>("nodes_drawn"_hs);
 
 		auto &camera = registry->ctx().get<gfx::camera>();
 
@@ -30,6 +31,7 @@ struct listener {
 		gfx::clear(gfx::clear_buffer::Color | gfx::clear_buffer::Depth);
 
 		shader.bind();
+		int i = 0;
 
 		{
 			glm::vec3 player_position = camera.get_position();
@@ -61,13 +63,16 @@ struct listener {
 					if (result.hit && result.node->draw_turn != draw_turn)
 					{
 						result.node->draw_turn = draw_turn;
+						i++;
 					}
 				}
 			}
 		}
 
 		svo.draw_node_buffer(camera.get_position(), camera.get_direction(), 2, draw_turn);
+
 		draw_turn++;
+		nodes_drawn = i;
 	}
 };
 
@@ -104,6 +109,8 @@ int main()
 	movement move;
 
 	registry.ctx().emplace_as<int>("draw_turn"_hs, 0);
+	registry.ctx().emplace_as<int>("nodes_drawn"_hs, 0);
+
 	registry.ctx().emplace<movement>();
 	registry.ctx().emplace<svo::svo>(octree);
 	registry.ctx().emplace<gfx::camera>(camera);

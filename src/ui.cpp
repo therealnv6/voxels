@@ -32,6 +32,7 @@ class ui_listener
 			float cur_avail_mem_mb = info::get_memory(memory_type::free_space, memory_scale::megabytes);
 
 			auto &draw_turn = registry->ctx().get<int>("draw_turn"_hs);
+			auto &nodes_drawn = registry->ctx().get<int>("nodes_drawn"_hs);
 
 			ImGui::Begin("ogl voxel");
 
@@ -41,7 +42,8 @@ class ui_listener
 				{
 					ImGui::PlotLines("", history.frames.data(), history.max_frames);
 					ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-					ImGui::Text("Application draw turn: %i (%.1f per second)", draw_turn, 1000.0f / draw_turn);
+					ImGui::Text("Application draw turn: %i", draw_turn);
+					ImGui::Text("Nodes not being drawn: %i, skipping %i vertices", nodes_drawn, nodes_drawn * 12);
 					ImGui::Text("Memory usage %.2f/%.3f MB", total_mem_mb - cur_avail_mem_mb, total_mem_gb);
 
 					ImGui::Text("camera.get_direction(): %s", glm::to_string(camera.get_direction()).c_str());
