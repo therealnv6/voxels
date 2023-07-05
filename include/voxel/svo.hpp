@@ -16,8 +16,32 @@ namespace svo
 	struct node {
 		glm::vec3 position;
 		voxel voxels[8];
+
+		node *parent = nullptr;
 		node *children[8] = { nullptr };
+
 		int draw_turn = -1;
+
+		void set_draw_turn(int turn, int depth)
+		{
+			this->draw_turn = turn;
+
+			if (parent != nullptr)
+			{
+				parent->set_draw_turn(turn, 0);
+			}
+
+			if (depth != 0)
+			{
+				for (node *child : children)
+				{
+					if (child)
+					{
+						child->set_draw_turn(turn, depth - 1);
+					}
+				}
+			}
+		}
 	};
 
 	struct march_result {
@@ -161,13 +185,14 @@ public:
 			for (int i = 0; i < 8; i++)
 			{
 				glm::vec3 child_position = parent_pos;
-				glm::vec3 child_color = (node->voxels[0].color * static_cast<float>(i));
+				glm::vec3 child_color = (node->voxels[0].color * (static_cast<float>(i) / 8));
 
 				child_position.x += (i & 1) ? child_size : -child_size;
 				child_position.y += (i & 2) ? child_size : -child_size;
 				child_position.z += (i & 4) ? child_size : -child_size;
 
 				node->children[i] = new class node();
+				node->children[i]->parent = node;
 				node->children[i]->position = child_position;
 				node->children[i]->voxels[0] = voxel { child_position, child_color, child_size };
 			}
@@ -276,17 +301,16 @@ public:
 
 						if (t >= 0.0f && t < result.distance)
 						{
-							result.distance = t;
-							result.node = child;
-
 							ray.set_origin(ray.get_origin() + ray.get_direction() * t);
 
 							march_result child_result = march_recursive(ray, max_distance - t, child);
 
-							if (child_result.node != nullptr)
+							if (child_result.node != nullptr && child_result.distance < max_distance)
 							{
-								result.distance += child_result.distance;
+								result.distance = t + child_result.distance;
 								result.hit = true;
+								result.node = child_result.node;
+								result.voxel = child_result.voxel;
 								break;
 							}
 						}
@@ -314,26 +338,26 @@ public:
 			return count;
 		}
 
-		void flatten_octree(const node *node, std::vector<voxel> &voxelData, int &currentIndex)
+		void flatten_octree(const node *node, std::vector<voxel> &data, int &index)
 		{
 			if (!node)
 			{
 				return;
 			}
 
-			glm::vec3 nodePosition = root->position + node->position;
+			glm::vec3 node_position = root->position + node->position;
 
 			for (int i = 0; i < 8; i++)
 			{
-				voxelData[currentIndex].position = nodePosition + node->voxels[i].position;
-				voxelData[currentIndex].color = node->voxels[i].color;
-				voxelData[currentIndex].size = node->voxels[i].size;
-				currentIndex++;
+				data[index].position = node_position + node->voxels[i].position;
+				data[index].color = node->voxels[i].color;
+				data[index].size = node->voxels[i].size;
+				index++;
 			}
 
 			for (int i = 0; i < 8; i++)
 			{
-				flatten_octree(node->children[i], voxelData, currentIndex);
+				flatten_octree(node->children[i], data, index);
 			}
 		}
 
@@ -342,10 +366,10 @@ public:
 			int numVoxels = count_voxels(root);
 			int current = 0;
 
-			std::vector<voxel> voxelData(numVoxels);
-			flatten_octree(root, voxelData, current);
+			std::vector<voxel> data(numVoxels);
+			flatten_octree(root, data, current);
 
-			buffer->write(voxelData.data(), sizeof(voxel) * numVoxels, 0);
+			buffer->write(data.data(), sizeof(voxel) * numVoxels, 0);
 		}
 
 		void update_buffer(voxel_set data)
@@ -371,7 +395,6 @@ public:
 			}
 		}
 
-public:
 		std::vector<voxel> get_voxels(int draw_turn)
 		{
 			voxel_set set;
@@ -381,12 +404,12 @@ public:
 
 		void get_voxels_with_depth(node *node, int draw_turn, int depth, voxel_set &voxels)
 		{
-			if (!node)
+			if (!node || node->draw_turn != draw_turn)
 			{
 				return;
 			}
 
-			if (depth == 1 && node->draw_turn != draw_turn)
+			if (depth <= 1)
 			{
 				for (int i = 0; i < 8; i += 1)
 				{

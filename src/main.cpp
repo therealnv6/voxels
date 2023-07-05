@@ -29,9 +29,9 @@ struct listener {
 		auto &svo = registry->ctx().get<svo::svo>();
 
 		gfx::clear(gfx::clear_buffer::Color | gfx::clear_buffer::Depth);
-
 		shader.bind();
-		int i = 0;
+
+		nodes_drawn = 0;
 
 		{
 			glm::vec3 player_position = camera.get_position();
@@ -39,9 +39,12 @@ struct listener {
 
 			cast.set_origin(player_position);
 
-			const int min_yaw = -45, max_yaw = 45, min_pitch = -45, max_pitch = 45;
-			const int near_yaw_step = 1, far_yaw_step = 5;
-			const int near_pitch_step = 1, far_pitch_step = 5;
+			const int min_yaw = -45, max_yaw = 45;
+			const int min_pitch = -45, max_pitch = 45;
+
+			const int multiplier = 500;
+			const int near_yaw_step = 1;
+			const int near_pitch_step = 1;
 
 			for (int yaw = min_yaw; yaw <= max_yaw; yaw += near_yaw_step)
 			{
@@ -51,7 +54,9 @@ struct listener {
 				{
 					float verticalAngle = glm::radians(static_cast<float>(pitch));
 
-					cast.set_direction(glm::rotate(glm::rotate(camera.get_direction(), verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f)), horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f)));
+					cast.set_direction(
+							glm::rotate(glm::rotate(camera.get_direction(), verticalAngle * multiplier, glm::vec3(1.0f, 0.0f, 0.0f)),
+									horizontalAngle * multiplier, glm::vec3(0.0f, 1.0f, 0.0f)));
 
 					const float max_distance = 25.0f; // Adjust as needed
 					auto result = svo.march(cast, max_distance);
@@ -62,17 +67,15 @@ struct listener {
 
 					if (result.hit && result.node->draw_turn != draw_turn)
 					{
-						result.node->draw_turn = draw_turn;
-						i++;
+						result.node->set_draw_turn(draw_turn, 1000);
+						nodes_drawn += 1;
 					}
 				}
 			}
 		}
 
 		svo.draw_node_buffer(camera.get_position(), camera.get_direction(), 2, draw_turn);
-
 		draw_turn++;
-		nodes_drawn = i;
 	}
 };
 
