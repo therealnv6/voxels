@@ -26,7 +26,7 @@ namespace svo
 		{
 			this->draw_turn = turn;
 
-			if (parent != nullptr)
+			if (parent)
 			{
 				parent->set_draw_turn(turn, 0);
 			}
