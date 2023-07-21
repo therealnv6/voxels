@@ -74,5 +74,7 @@ class ui_listener
 
 void register_gui(entt::dispatcher &dispatcher)
 {
-	dispatcher.sink<frame::tick_event>().connect<&ui_listener::update_gui>(ui_listener {});
+	dispatcher
+			.sink<frame::tick_event>()
+			.connect<&ui_listener::update_gui>(ui_listener {});
 }

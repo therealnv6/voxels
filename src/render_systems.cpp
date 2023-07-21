@@ -54,7 +54,7 @@ struct listener {
 							glm::rotate(glm::rotate(camera.get_direction(), verticalAngle * multiplier, glm::vec3(1.0f, 0.0f, 0.0f)),
 									horizontalAngle * multiplier, glm::vec3(0.0f, 1.0f, 0.0f)));
 
-					const float max_distance = 25.0f;
+					const float max_distance = 100.0f;
 					auto result = svo.march(cast, max_distance);
 
 					float distance = result.distance;
@@ -63,7 +63,7 @@ struct listener {
 
 					if (result.hit && result.node->draw_turn != draw_turn)
 					{
-						result.node->set_draw_turn(draw_turn, 1000);
+						result.node->set_draw_turn(draw_turn, 4);
 						nodes_drawn += 1;
 					}
 				}
@@ -76,8 +76,12 @@ struct listener {
 
 void register_renderer(entt::registry &registry, entt::dispatcher &dispatcher)
 {
-	registry.ctx().emplace_as<int>("draw_turn"_hs, 0);
-	registry.ctx().emplace_as<int>("nodes_drawn"_hs, 0);
+	auto context = registry.ctx();
 
-	dispatcher.sink<frame::tick_event>().connect<&listener::tick_svo>(listener {});
+	context.emplace_as<int>("draw_turn"_hs, 0);
+	context.emplace_as<int>("nodes_drawn"_hs, 0);
+
+	dispatcher
+			.sink<frame::tick_event>()
+			.connect<&listener::tick_svo>(listener {});
 }

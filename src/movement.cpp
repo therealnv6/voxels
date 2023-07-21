@@ -117,6 +117,11 @@ void register_input(entt::dispatcher &dispatcher)
 {
 	movement_listener listener;
 
-	dispatcher.sink<frame::tick_event>().connect<&movement_listener::update_camera>(listener);
-	dispatcher.sink<poll_input_event>().connect<&movement_listener::input>(listener);
+	dispatcher
+			.sink<frame::tick_event>()
+			.connect<&movement_listener::update_camera>(listener);
+
+	dispatcher
+			.sink<poll_input_event>()
+			.connect<&movement_listener::input>(listener);
 }
